@@ -1,0 +1,48 @@
+{
+  "name": "testcafe-reporter-influxdb",
+  "version": "1.0.0",
+  "description": "TestCafe reporter plugin for Influxdb.",
+  "repository": "https://github.com/vanBadAsselt/testcafe-reporter-influxdb",
+  "author": {
+    "name": "anaisvanasselt",
+    "email": "anais@detesters.nl",
+    "url": "https://linkedin.com/in/anais-van-asselt"
+  },
+  "main": "lib/index",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "gulp build",
+    "lint": "eslint 'src/*.js'",
+    "lint-fix": "eslint --fix 'src/*.js'",
+    "test": "gulp test"
+  },
+  "keywords": [
+    "testcafe",
+    "reporter",
+    "influxdb",
+    "plugin"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.3.4",
+    "@babel/plugin-transform-runtime": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
+    "babel-eslint": "^10.0.1",
+    "callsite-record": "^3.2.0",
+    "del": "^1.2.0",
+    "dotenv": "^8.2.0",
+    "gulp": "^4.0.0",
+    "gulp-babel": "^8.0.0",
+    "gulp-eslint": "^5.0.0",
+    "gulp-mocha": "^6.0.0",
+    "normalize-newline": "^1.0.2",
+    "read-file-relative": "^1.2.0",
+    "testcafe": "^1.0.1"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.3.4",
+    "influx": "^5.6.3"
+  }
+}
