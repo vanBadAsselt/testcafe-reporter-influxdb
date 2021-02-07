@@ -6,18 +6,6 @@ const tableNameRun = 'testcafeRun';
 const resultOk = 'SUCCESSFUL';
 const resultNok = 'FAILED';
 
-let testType = 'UNK';
-
-let application = 'UNK';
-
-let metaFeature = 'UNK';
-
-let metaRisk = 'UNK';
-
-let ciReleaseVersion = 'UNK';
-
-const testPoints = [];
-
 const influx = new Influx.InfluxDB({
     host:     process.env.INFLUX_HOST,
     port:     process.env.INFLUX_PORT,
@@ -44,7 +32,7 @@ const influx = new Influx.InfluxDB({
             measurement: tableNameRun,
             fields:      {
                 testRun:          Influx.FieldType.STRING,
-                duration:         Influx.FieldType.STRING,
+                durationMs:       Influx.FieldType.STRING,
                 testCases:        Influx.FieldType.INTEGER,
                 testCasesFailed:  Influx.FieldType.INTEGER,
                 testCasesSkipped: Influx.FieldType.INTEGER,
@@ -58,48 +46,76 @@ const influx = new Influx.InfluxDB({
 });
 
 /**
- * Determine the application name based on the path of your project
+ * Get the application name based on the path of your project
  * @param path of the project
  */
-function defineApplication (path) {
+function getApplicationFromPath (path) {
     if (path.includes('application placeholder a'))
-        application = 'application placeholder a';
+        return 'application placeholder a';
     else if (path.includes('application placeholder b'))
-        application = 'application placeholder b';
+        return 'application placeholder b';
+    return 'UNK';
 }
 
 /**
- * Determine the test type based on the path directory of your tests
+ * Get the test type based on the path directory of your tests
  * @param path of the project
  */
-function defineTestType (path) {
+function getTestTypeFromPath (path) {
     if (path.includes('component'))
-        testType = 'CT';
+        return 'CT';
     else if (path.includes('integration'))
-        testType = 'IT';
+        return 'IT';
+    return 'UNK';
 }
 
 /**
- * Saves the metadata you add to your TestCafe test, check out the readme for an example
+ * Get the metadata value for key 'feature' you add to your TestCafe test, check out the readme for an example
  * @param metadata on fixture or test level
  */
-function setMetadata (metadata) {
+function getFeatureFromMetadata (metadata) {
     if (metadata && metadata.feature)
-        metaFeature = metadata.feature;
-
-    if (metadata && metadata.risk)
-        metaRisk = metadata.risk;
+        return metadata.feature;
+    return 'UNK';
 }
 
 /**
- * Saves the release version of your project when available, check out the readme to export this env var
+ * Get the metadata value for key 'risk' you add to your TestCafe test, check out the readme for an example
+ * @param metadata on fixture or test level
  */
-function setReleaseVersion () {
-    if (process.env.CI_RELEASE_VERSION)
-        ciReleaseVersion = process.env.CI_RELEASE_VERSION.toString();
+function getRiskFromMetadata (metadata) {
+    if (metadata && metadata.risk)
+        return metadata.risk;
+    return 'UNK';
 }
 
+/**
+ * Get the release version of your project when available, check out the readme to export this env var
+ */
+function getReleaseVersionFromCI () {
+    if (process.env.CI_RELEASE_VERSION)
+        return process.env.CI_RELEASE_VERSION.toString();
+    return 'UNK';
+}
+
+
 module.exports = function () {
+    const defaultTestPoint = {
+        measurement: tableNameTest,
+        tags:        {},
+        fields:      {},
+    };
+
+    let testPoint = defaultTestPoint;
+
+    const testPoints = [];
+
+    const testRunPoint = {
+        measurement: tableNameRun,
+        tags:        {},
+        fields:      {},
+    };
+
     return {
         noColors: true,
 
@@ -119,9 +135,16 @@ module.exports = function () {
                 });
             });
 
-            setReleaseVersion();
             this.startTime = startTime.toDateString();
-            this.testCount = testCount;
+
+            const ciReleaseVersion = getReleaseVersionFromCI();
+
+            testPoint.fields.releaseVersion = ciReleaseVersion;
+            testPoint.fields.testRun = this.startTime;
+
+            testRunPoint.fields.releaseVersion = ciReleaseVersion;
+            testRunPoint.fields.testRun = this.startTime;
+            testRunPoint.fields.testCases = testCount;
 
             this.write(`Testcafe reporter started! Running tests in: ${userAgents} for ${ciReleaseVersion}`)
                 .newline()
@@ -135,10 +158,17 @@ module.exports = function () {
          * @param {Object} fixtureMeta - The fixture metadata.
          */
         reportFixtureStart (name, path, fixtureMeta) {
-            this.currentFixtureName = name;
-            defineApplication(path);
-            defineTestType(path);
-            setMetadata(fixtureMeta);
+            if (typeof defaultTestPoint.tags.application === 'undefined') {
+                const application = getApplicationFromPath(path);
+
+                defaultTestPoint.tags.application = application;
+                testRunPoint.tags.application = application;
+            }
+
+            testPoint.fields.fixtureName = name;
+            testPoint.tags.testType = getTestTypeFromPath(path);
+            testPoint.tags.feature = getFeatureFromMetadata(fixtureMeta);
+            testPoint.tags.risk = getRiskFromMetadata(fixtureMeta);
         },
 
         /**
@@ -146,8 +176,10 @@ module.exports = function () {
          * @param {String} name - The test name.
          * @param {Object} testMeta - The test metadata.
          */
-        reportTestStart (/* name, testMeta */) {
-            // Not implemented.
+        reportTestStart (name, testMeta ) {
+            testPoint.fields.testName = name;
+            testPoint.tags.feature = getFeatureFromMetadata(testMeta);
+            testPoint.tags.risk = getRiskFromMetadata(testMeta);
         },
 
         /**
@@ -156,13 +188,11 @@ module.exports = function () {
          * @param {Object} testRunInfo - The testRunInfo object. Check out typedefs.js
          * @param {Object} testMeta - The test metadata.
          */
-        reportTestDone (name, testRunInfo, testMeta) {
+        reportTestDone (name, testRunInfo, /* testMeta */) {
             const errors = testRunInfo.errs;
             const warnings = testRunInfo.warnings;
             const hasErrors = !!errors.length;
             const hasWarnings = !!warnings.length;
-
-            setMetadata(testMeta);
 
             let resultTest = resultOk;
 
@@ -183,22 +213,13 @@ module.exports = function () {
                 });
             }
 
-            const testPoint =
-                {
-                    measurement: tableNameTest,
-                    tags:        { application: application, testType: testType, feature: metaFeature, risk: metaRisk, result: resultTest },
-                    fields:      {
-                        testRun:        this.startTime,
-                        testName:       name,
-                        fixtureName:    this.currentFixtureName,
-                        durationMs:     testRunInfo.durationMs,
-                        errorMessage:   errorMessage,
-                        warningMessage: warningMessage,
-                        releaseVersion: ciReleaseVersion
-                    },
-                };
+            testPoint.tags.result = resultTest;
+            testPoint.fields.durationMs = testRunInfo.durationMs;
+            testPoint.fields.errorMessage = errorMessage;
+            testPoint.fields.warningMessage = warningMessage;
 
             testPoints.push(testPoint);
+            testPoint = defaultTestPoint;
         },
 
         /**
@@ -210,28 +231,17 @@ module.exports = function () {
          */
         reportTaskDone (endTime, passed, warnings, testRunResult) {
             const durationMs = endTime - this.startTime;
-            const durationStr = this.moment
-                .duration(durationMs)
-                .format('h[h] mm[m] ss[s]');
 
             const resultTestRun = testRunResult.failedCount > 0 || durationMs === 0 ? resultNok : resultOk;
 
-            influx.writePoints(testPoints);
+            testRunPoint.tags.result = resultTestRun;
+            testRunPoint.fields.durationMs = durationMs;
+            testRunPoint.fields.testCasesFailed = testRunResult.failedCount;
+            testRunPoint.fields.testCasesSkipped = testRunResult.skippedCount;
 
-            influx.writePoints([
-                {
-                    measurement: tableNameRun,
-                    tags:        { application: application, result: resultTestRun },
-                    fields:      {
-                        duration:         durationStr,
-                        testRun:          this.startTime,
-                        testCases:        this.testCount,
-                        testCasesFailed:  testRunResult.failedCount,
-                        testCasesSkipped: testRunResult.skippedCount,
-                        releaseVersion:   ciReleaseVersion
-                    },
-                }
-            ]);
+            influx.writePoints(testPoints);
+            influx.writePoints([testRunPoint]);
+
             this.write(`Test reporter done at ${endTime}`)
                 .newline()
                 .write(`Test results are saved in Influx DB ${process.env.INFLUX_HOST}`)
