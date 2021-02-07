@@ -6,6 +6,9 @@
     "type": "git",
     "url": "https://github.com/vanBadAsselt/testcafe-reporter-influxdb.git"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@vanbadasselt"
+  },
   "author": {
     "name": "anaisvanasselt",
     "email": "anais@detesters.nl",
