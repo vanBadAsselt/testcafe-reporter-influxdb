@@ -1,8 +1,11 @@
 {
   "name": "testcafe-reporter-influxdb",
-  "version": "1.0.0",
-  "description": "TestCafe reporter plugin for Influxdb.",
-  "repository": "https://github.com/vanBadAsselt/testcafe-reporter-influxdb",
+  "version": "0.0.1",
+  "description": "TestCafe reporter plugin for Influxdb",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vanBadAsselt/testcafe-reporter-influxdb.git"
+  },
   "author": {
     "name": "anaisvanasselt",
     "email": "anais@detesters.nl",
