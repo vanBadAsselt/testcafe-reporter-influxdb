@@ -1,13 +1,11 @@
 name: ci
 
 on:
-    push:
-        branches: [ master ]
-    pull_request:
-        branches: [ master ]
+    release:
+        types: [ created ]
 
 jobs:
-    run:
+    build:
         runs-on: ${{ matrix.os }}
         strategy:
             matrix:
@@ -19,7 +17,17 @@ jobs:
             - name: Checkout
               uses: actions/checkout@master
 
+            # Setup .npmrc file to publish to GitHub Packages
             - name: Setup Node.js
               uses: actions/setup-node@v1
               with:
                   node-version: 12.x
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Release
+              run: npm publish
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+

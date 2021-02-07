@@ -4,7 +4,7 @@
   "description": "TestCafe reporter plugin for Influxdb",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vanBadAsselt/testcafe-reporter-influxdb.git"
+    "url": "https://github.com/vanBadAsselt/testcafe-reporter-influxdb.git"
   },
   "author": {
     "name": "anaisvanasselt",
