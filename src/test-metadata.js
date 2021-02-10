@@ -3,7 +3,9 @@
  * @type {{LOGIN: string}}
  */
 export const FeatureCategory = {
-    LOGIN: 'Login',
+    LOGIN:            'Login',
+    BERTH_OCCUPATION: 'Berth occ',
+    USABILITY:        'Bruikbaarheid'
 };
 
 export const RiskCategory = {

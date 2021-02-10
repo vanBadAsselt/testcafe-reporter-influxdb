@@ -3,8 +3,27 @@ require('dotenv').config();
 const Influx = require('influx');
 const tableNameTest = 'testcafeTest';
 const tableNameRun = 'testcafeRun';
+const unknown = 'UNK';
 const resultOk = 'SUCCESSFUL';
 const resultNok = 'FAILED';
+
+let testType = unknown;
+
+let application = unknown;
+
+let metaFeature = unknown;
+
+let metaRisk = unknown;
+
+let ciReleaseVersion = unknown;
+
+let startTimeDate = new Date();
+
+let startTimeStr = unknown;
+
+let testCasesAmount = 0;
+
+let fixtureName = unknown;
 
 const influx = new Influx.InfluxDB({
     host:     process.env.INFLUX_HOST,
@@ -32,7 +51,7 @@ const influx = new Influx.InfluxDB({
             measurement: tableNameRun,
             fields:      {
                 testRun:          Influx.FieldType.STRING,
-                durationMs:       Influx.FieldType.STRING,
+                duration:         Influx.FieldType.STRING,
                 testCases:        Influx.FieldType.INTEGER,
                 testCasesFailed:  Influx.FieldType.INTEGER,
                 testCasesSkipped: Influx.FieldType.INTEGER,
@@ -49,73 +68,48 @@ const influx = new Influx.InfluxDB({
  * Get the application name based on the path of your project
  * @param path of the project
  */
-function getApplicationFromPath (path) {
+function setApplicationFromPath (path) {
     if (path.includes('application placeholder a'))
-        return 'application placeholder a';
+        application = 'application placeholder a';
     else if (path.includes('application placeholder b'))
-        return 'application placeholder b';
-    return 'UNK';
+        application = 'application placeholder b';
+    else
+        application = 'UNK_APP';
 }
 
 /**
- * Get the test type based on the path directory of your tests
+ * Set the test type based on the path directory of your tests
  * @param path of the project
  */
-function getTestTypeFromPath (path) {
+function setTestTypeFromPath (path) {
     if (path.includes('component'))
-        return 'CT';
+        testType = 'CT';
     else if (path.includes('integration'))
-        return 'IT';
-    return 'UNK';
+        testType = 'IT';
 }
 
 /**
- * Get the metadata value for key 'feature' you add to your TestCafe test, check out the readme for an example
+ * Set the metadata value for keys 'feature' and 'risk' you add to your TestCafe test, check out the readme for an example
  * @param metadata on fixture or test level
  */
-function getFeatureFromMetadata (metadata) {
+function setFeatureAndRiskFromMetadata (metadata) {
     if (metadata && metadata.feature)
-        return metadata.feature;
-    return 'UNK';
-}
+        metaFeature = metadata.feature;
 
-/**
- * Get the metadata value for key 'risk' you add to your TestCafe test, check out the readme for an example
- * @param metadata on fixture or test level
- */
-function getRiskFromMetadata (metadata) {
     if (metadata && metadata.risk)
-        return metadata.risk;
-    return 'UNK';
+        metaRisk = metadata.risk;
 }
 
 /**
- * Get the release version of your project when available, check out the readme to export this env var
+ * Set the release version of your project when available, check out the readme to export this env var
  */
-function getReleaseVersionFromCI () {
+function setReleaseVersionFromCI () {
     if (process.env.CI_RELEASE_VERSION)
-        return process.env.CI_RELEASE_VERSION.toString();
-    return 'UNK';
+        ciReleaseVersion = process.env.CI_RELEASE_VERSION.toString();
 }
 
 
 module.exports = function () {
-    const defaultTestPoint = {
-        measurement: tableNameTest,
-        tags:        {},
-        fields:      {},
-    };
-
-    let testPoint = defaultTestPoint;
-
-    const testPoints = [];
-
-    const testRunPoint = {
-        measurement: tableNameRun,
-        tags:        {},
-        fields:      {},
-    };
-
     return {
         noColors: true,
 
@@ -129,22 +123,16 @@ module.exports = function () {
             influx.ping(5000).then(hosts => {
                 hosts.forEach(host => {
                     if (host.online)
-                        console.log(`${host.url.host} responded in ${host.rtt} ms running ${host.version})`);
+                        console.log(`${host.url.host} responded in ${host.rtt} ms running on host version ${host.version}`);
                     else
                         console.log(`${host.url.host} is offline :(`);
                 });
             });
 
-            this.startTime = startTime.toDateString();
-
-            const ciReleaseVersion = getReleaseVersionFromCI();
-
-            testPoint.fields.releaseVersion = ciReleaseVersion;
-            testPoint.fields.testRun = this.startTime;
-
-            testRunPoint.fields.releaseVersion = ciReleaseVersion;
-            testRunPoint.fields.testRun = this.startTime;
-            testRunPoint.fields.testCases = testCount;
+            startTimeDate = startTime;
+            startTimeStr = startTime.toDateString();
+            testCasesAmount = testCount;
+            setReleaseVersionFromCI();
 
             this.write(`Testcafe reporter started! Running tests in: ${userAgents} for ${ciReleaseVersion}`)
                 .newline()
@@ -158,17 +146,12 @@ module.exports = function () {
          * @param {Object} fixtureMeta - The fixture metadata.
          */
         reportFixtureStart (name, path, fixtureMeta) {
-            if (typeof defaultTestPoint.tags.application === 'undefined') {
-                const application = getApplicationFromPath(path);
+            if (application === unknown)
+                setApplicationFromPath(path);
 
-                defaultTestPoint.tags.application = application;
-                testRunPoint.tags.application = application;
-            }
-
-            testPoint.fields.fixtureName = name;
-            testPoint.tags.testType = getTestTypeFromPath(path);
-            testPoint.tags.feature = getFeatureFromMetadata(fixtureMeta);
-            testPoint.tags.risk = getRiskFromMetadata(fixtureMeta);
+            setTestTypeFromPath(path);
+            setFeatureAndRiskFromMetadata(fixtureMeta);
+            fixtureName = name;
         },
 
         /**
@@ -176,10 +159,8 @@ module.exports = function () {
          * @param {String} name - The test name.
          * @param {Object} testMeta - The test metadata.
          */
-        reportTestStart (name, testMeta ) {
-            testPoint.fields.testName = name;
-            testPoint.tags.feature = getFeatureFromMetadata(testMeta);
-            testPoint.tags.risk = getRiskFromMetadata(testMeta);
+        reportTestStart (/*name, testMeta*/ ) {
+            // Not implemented.
         },
 
         /**
@@ -188,11 +169,13 @@ module.exports = function () {
          * @param {Object} testRunInfo - The testRunInfo object. Check out typedefs.js
          * @param {Object} testMeta - The test metadata.
          */
-        reportTestDone (name, testRunInfo, /* testMeta */) {
+        reportTestDone (name, testRunInfo, testMeta ) {
             const errors = testRunInfo.errs;
             const warnings = testRunInfo.warnings;
             const hasErrors = !!errors.length;
             const hasWarnings = !!warnings.length;
+
+            setFeatureAndRiskFromMetadata(testMeta);
 
             let resultTest = resultOk;
 
@@ -213,13 +196,22 @@ module.exports = function () {
                 });
             }
 
-            testPoint.tags.result = resultTest;
-            testPoint.fields.durationMs = testRunInfo.durationMs;
-            testPoint.fields.errorMessage = errorMessage;
-            testPoint.fields.warningMessage = warningMessage;
+            const testPoint =
+                {
+                    measurement: tableNameTest,
+                    tags:        { application: application, testType: testType, feature: metaFeature, risk: metaRisk, result: resultTest },
+                    fields:      {
+                        testRun:        startTimeStr,
+                        testName:       name,
+                        fixtureName:    fixtureName,
+                        durationMs:     testRunInfo.durationMs,
+                        errorMessage:   errorMessage,
+                        warningMessage: warningMessage,
+                        releaseVersion: ciReleaseVersion
+                    },
+                };
 
-            testPoints.push(testPoint);
-            testPoint = defaultTestPoint;
+            influx.writePoints([testPoint]);
         },
 
         /**
@@ -230,17 +222,25 @@ module.exports = function () {
          * @param {Object} testRunResult - Contains information about the task results. Check out typedefs.js
          */
         reportTaskDone (endTime, passed, warnings, testRunResult) {
-            const durationMs = endTime - this.startTime;
+            const durationMs = endTime - startTimeDate;
+            const durationStr = this.moment
+                .duration(durationMs)
+                .format('h[h] mm[m] ss[s]');
 
             const resultTestRun = testRunResult.failedCount > 0 || durationMs === 0 ? resultNok : resultOk;
 
-            testRunPoint.tags.result = resultTestRun;
-            testRunPoint.fields.durationMs = durationMs;
-            testRunPoint.fields.testCasesFailed = testRunResult.failedCount;
-            testRunPoint.fields.testCasesSkipped = testRunResult.skippedCount;
-
-            influx.writePoints(testPoints);
-            influx.writePoints([testRunPoint]);
+            influx.writePoints([{
+                measurement: tableNameRun,
+                tags:        { application: application, result: resultTestRun },
+                fields:      {
+                    duration:         durationStr,
+                    testRun:          startTimeStr,
+                    testCases:        testCasesAmount,
+                    testCasesFailed:  testRunResult.failedCount,
+                    testCasesSkipped: testRunResult.skippedCount,
+                    releaseVersion:   ciReleaseVersion
+                },
+            }]);
 
             this.write(`Test reporter done at ${endTime}`)
                 .newline()
