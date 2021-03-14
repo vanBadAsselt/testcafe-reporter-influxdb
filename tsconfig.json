@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "declaration": true,
+    "esModuleInterop": true,
+    "lib": ["es6", "dom"],
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "outDir": "lib",
+    "resolveJsonModule": true,
+    "rootDir": "./src",
+    "target": "es6"
+  },
+  "exclude": ["lib", "node_modules"]
+}

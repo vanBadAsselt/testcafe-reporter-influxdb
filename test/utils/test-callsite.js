@@ -1,13 +1,11 @@
 var createCallsiteRecord = require('callsite-record');
 
-function someFunc () {
-    throw new Error('Hey ya!');
+function someFunc() {
+  throw new Error('Hey ya!');
 }
 
 try {
-    someFunc();
+  someFunc();
+} catch (err) {
+  module.exports = createCallsiteRecord(err);
 }
-catch (err) {
-    module.exports = createCallsiteRecord(err);
-}
-
