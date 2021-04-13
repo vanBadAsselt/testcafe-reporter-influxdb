@@ -5,16 +5,14 @@ import { TestMetadata } from './test-metadata';
 
 const tableNameTest = 'testcafeTest';
 const tableNameRun = 'testcafeRun';
+const testPoints: IPoint[] = [];
+const testRunStarted = Date.now();
+const hrtimeStarted = process.hrtime.bigint();
 
 let testType = 'UNK';
-
 let application = 'UNK';
-
 let metaRisk = 'UNK';
 let metaFeature = 'UNK';
-
-const testPoints: IPoint[] = [];
-
 let influxOnline = true;
 
 const influx = new InfluxDB({
@@ -34,7 +32,7 @@ const influx = new InfluxDB({
                 warningMessage: FieldType.STRING,
                 releaseVersion: FieldType.STRING,
             },
-            tags: ['testId', 'application', 'testType', 'risk', 'feature', 'result'],
+            tags: ['application', 'testType', 'risk', 'feature', 'result'],
         },
         {
             measurement: tableNameRun,
@@ -55,6 +53,7 @@ const influx = new InfluxDB({
  * @param path of the project
  */
 function setApplication(path: string) {
+    // TODO: Implement this for your applicable applications
     if (path.includes('application placeholder a')) application = 'application placeholder a';
     else if (path.includes('application placeholder b')) application = 'application placeholder a';
     else application = 'unknown application';
@@ -65,6 +64,7 @@ function setApplication(path: string) {
  * @param path of the project
  */
 function setTestType(path: string) {
+    // TODO: Implement this for your applicable test types
     if (path.includes('component')) testType = 'CT';
     else if (path.includes('integration')) testType = 'IT';
 }
@@ -172,10 +172,14 @@ module.exports = function () {
                     });
                 }
 
+                const hrtimeCurrent = process.hrtime.bigint();
+                const timeDiffMs = Number(hrtimeCurrent - hrtimeStarted) / 1e6;
+                const nanoTime = (testRunStarted + timeDiffMs) * 1e6;
+
                 const testPoint: IPoint = {
                     measurement: tableNameTest,
+                    timestamp: nanoTime,
                     tags: {
-                        testId: testRunInfo.testId,
                         application: application,
                         testType: testType,
                         risk: metaRisk,
