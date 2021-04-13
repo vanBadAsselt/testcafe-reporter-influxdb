@@ -3,18 +3,18 @@
  * @type {{LOGIN: string}}
  */
 export interface TestMetadata {
-    risk?: Risk;
-    feature?: Feature;
+  risk?: Risk;
+  feature?: Feature;
 }
 
 export enum Risk {
-    SMOKE = 'SMOKE',
-    HIGH = 'HIGH',
-    MEDIUM = 'MEDIUM',
-    LOW = 'LOW',
+  SMOKE = 'SMOKE',
+  HIGH = 'HIGH',
+  MEDIUM = 'MEDIUM',
+  LOW = 'LOW',
 }
 
 export enum Feature {
-    LOGIN = 'LOGIN',
-    USABILITY = 'USABILITY',
+  LOGIN = 'LOGIN',
+  USABILITY = 'USABILITY',
 }

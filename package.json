@@ -18,9 +18,7 @@
   "scripts": {
     "prebuild": "rimraf lib",
     "build": "tsc",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "lint": "eslint 'src/*.ts'",
-    "lint-fix": "eslint --fix 'src/*.ts'",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.js\"",
     "test": "gulp test"
   },
   "keywords": [
