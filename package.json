@@ -1,6 +1,6 @@
 {
   "name": "testcafe-reporter-influxdb",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "TestCafe reporter plugin for Influxdb",
   "repository": {
     "type": "git",
