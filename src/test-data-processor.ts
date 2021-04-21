@@ -44,18 +44,18 @@ export class TestDataProcessor {
    * @param path of the project
    */
   set application(path: string) {
-      let applicationProcessed;
+    let applicationProcessed;
 
-      if (!config.ciProjectName.includes('UNK')) {
-          applicationProcessed = config.ciProjectName;
-      }
+    if (!config.ciProjectName.includes('UNK')) {
+      applicationProcessed = config.ciProjectName;
+    }
 
-      if (path.includes('my-project')) applicationProcessed = 'MY_PROJECT';
-      else applicationProcessed = 'UNKNOWN_APPLICATION';
+    if (path.includes('my-project')) applicationProcessed = 'MY_PROJECT';
+    else applicationProcessed = 'UNKNOWN_APPLICATION';
 
-      this._application = applicationProcessed;
-      this._testCafeRunPoint.tags.application = this._application;
-      this._testCafeTestPoint.tags.application = this._application;
+    this._application = applicationProcessed;
+    this._testCafeRunPoint.tags.application = this._application;
+    this._testCafeTestPoint.tags.application = this._application;
   }
 
   set durationTestMs(durationMs: number) {
