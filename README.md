@@ -38,7 +38,7 @@ testCafe
     .createRunner()
     .src('path/to/test/file.js')
     .browsers('chrome')
-    .reporter('influxdb') // <-
+    .reporter([{ name: 'influxdb', output: `output/test/influxdb.txt` }]) // <-
     .run();
 ```
 

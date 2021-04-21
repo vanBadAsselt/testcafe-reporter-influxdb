@@ -5,6 +5,7 @@ const result = dotenv.config();
 if (result.error) throw result.error;
 
 export const config = {
+  ciProjectName: process.env.CI_PROJECT_NAME ?? 'UNK', // this is a gitlab predefined variable
   ciReleaseVersion: process.env.CI_RELEASE_VERSION ?? 'UNK',
   testResultsEnabled: process.env.TEST_RESULTS_ENABLED === 'true',
   influxHost: process.env.TEST_RESULTS_INFLUX_HOST ?? 'localhost',
