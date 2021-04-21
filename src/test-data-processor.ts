@@ -44,22 +44,18 @@ export class TestDataProcessor {
    * @param path of the project
    */
   set application(path: string) {
-    if (!config.ciProjectName.includes('UNK')) {
-      this._application = config.ciProjectName;
-    }
+      let applicationProcessed;
 
-    if (!!path) {
-      const sourceParts = path.split('\\.');
-
-      if (sourceParts[0].includes('com') && sourceParts[1].includes('github')) {
-        this._application = (sourceParts[2] + '_' + sourceParts[3]).toUpperCase();
-      } else {
-        this._application = 'NO_GITHUB_APPLICATION';
+      if (!config.ciProjectName.includes('UNK')) {
+          applicationProcessed = config.ciProjectName;
       }
-    }
 
-    this._testCafeRunPoint.tags.application = this._application;
-    this._testCafeTestPoint.tags.application = this._application;
+      if (path.includes('my-project')) applicationProcessed = 'MY_PROJECT';
+      else applicationProcessed = 'UNKNOWN_APPLICATION';
+
+      this._application = applicationProcessed;
+      this._testCafeRunPoint.tags.application = this._application;
+      this._testCafeTestPoint.tags.application = this._application;
   }
 
   set durationTestMs(durationMs: number) {
