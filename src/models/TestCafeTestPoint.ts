@@ -24,11 +24,10 @@ export class TestCafeTestPoint implements IPoint {
     };
     this.tags = {
       application: UNKNOWN,
-      category: UNKNOWN,
-      process: UNKNOWN,
+      feature: UNKNOWN,
       releaseVersion: UNKNOWN,
       result: UNKNOWN,
-      section: UNKNOWN,
+      risk: UNKNOWN,
       testType: UNKNOWN,
       unstable: UNKNOWN,
     };

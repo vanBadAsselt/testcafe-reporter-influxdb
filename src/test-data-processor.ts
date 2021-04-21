@@ -87,17 +87,10 @@ export class TestDataProcessor {
    * TODO: this is an example, make this applicable for your project, check out the readme for an example
    * @param metadata on fixture or test level
    */
-  // set metadata(metadata: TestMetadata) {
-  //   if (metadata.risk) metaRisk = metadata.risk;
-  //
-  //   if (metadata.feature) metaFeature = metadata.feature;
-  // }
   set metaData(metadata: TestMetadata) {
-    if (metadata.category) this._testCafeTestPoint.tags.category = metadata.category;
+    if (metadata.risk) this._testCafeTestPoint.tags.risk = metadata.risk;
 
-    if (metadata.process) this._testCafeTestPoint.tags.process = metadata.process;
-
-    if (metadata.section) this._testCafeTestPoint.tags.section = metadata.section;
+    if (metadata.feature) this._testCafeTestPoint.tags.feature = metadata.feature;
   }
 
   set releaseVersion(releaseVersion: string) {

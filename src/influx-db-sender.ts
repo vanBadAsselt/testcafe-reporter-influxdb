@@ -19,7 +19,7 @@ export const influx = new InfluxDB({
         errorMessage: FieldType.STRING,
         warningMessage: FieldType.STRING,
       },
-      tags: ['application', 'testType', 'category', 'process', 'section', 'releaseVersion', 'result', 'unstable'],
+      tags: ['application', 'testType', 'feature', 'risk', 'releaseVersion', 'result', 'unstable'],
     },
     {
       measurement: tableNameRun,
