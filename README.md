@@ -8,6 +8,12 @@ Generated this project using the [generator-testcafe-reporter](https://devexpres
     <img src="https://raw.github.com/vanBadAsselt/testcafe-reporter-influxdb/master/media/preview.png" alt="preview" />
 </p>
 
+## Requirements
+In the project where you use the reporter:
+* TestCafe tests
+* Dotenv as devDependency
+* Set the required environment variables in the `.env` or `.yml`
+
 ## Install
 
 ```
@@ -30,7 +36,6 @@ When you run tests from the command line, specify the reporter name by using the
 testcafe chrome 'path/to/test/file.js' --reporter influxdb
 ```
 
-
 When you use API, pass the reporter name to the `reporter()` method:
 
 ```js
@@ -38,7 +43,7 @@ testCafe
     .createRunner()
     .src('path/to/test/file.js')
     .browsers('chrome')
-    .reporter('influxdb') // <-
+    .reporter([{ name: 'influxdb', output: `output/test/influxdb.txt` }]) // <-
     .run();
 ```
 

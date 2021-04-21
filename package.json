@@ -16,9 +16,9 @@
     "lib"
   ],
   "scripts": {
-    "build": "gulp build",
-    "lint": "eslint 'src/*.js'",
-    "lint-fix": "eslint --fix 'src/*.js'",
+    "prebuild": "rimraf lib",
+    "build": "tsc",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.js\"",
     "test": "gulp test"
   },
   "keywords": [
@@ -36,13 +36,17 @@
     "callsite-record": "^3.2.0",
     "del": "^1.2.0",
     "dotenv": "^8.2.0",
+    "eslint-config-prettier": "^8.1.0",
     "gulp": "^4.0.0",
     "gulp-babel": "^8.0.0",
     "gulp-eslint": "^5.0.0",
     "gulp-mocha": "^6.0.0",
     "normalize-newline": "^1.0.2",
+    "prettier": "^2.2.1",
     "read-file-relative": "^1.2.0",
-    "testcafe": "^1.0.1"
+    "rimraf": "^3.0.2",
+    "testcafe": "^1.0.1",
+    "typescript": "^4.2.3"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.4",
