@@ -8,11 +8,16 @@ export const UNKNOWN = 'UNK';
 export class TestDataProcessor {
   private _application: string = UNKNOWN;
   private _durationTestRunMs: number = 0;
+  private _feature: string = UNKNOWN;
+  private _fixtureName: string = UNKNOWN;
+  private _releaseVersion: string = UNKNOWN;
+  private _risk: string = UNKNOWN;
   private _startTimeTest: number = 0;
   private _startHrTimeTest: bigint = BigInt(0);
   private _startTimeTestRun: number = 0;
   private _startTimeTestRunDate: number = Date.now();
   private _testRunResult: string = UNKNOWN;
+  private _testType: string = UNKNOWN;
 
   private _testCafeTestPoint: TestCafeTestPoint;
   private readonly _testCafeRunPoint: TestCafeRunPoint;
@@ -32,6 +37,12 @@ export class TestDataProcessor {
 
   resetTestCafeTestPoint() {
     this._testCafeTestPoint = new TestCafeTestPoint();
+    this._testCafeTestPoint.fields.fixtureName = this._fixtureName;
+    this._testCafeTestPoint.tags.application = this._application;
+    this._testCafeTestPoint.tags.feature = this._feature;
+    this._testCafeTestPoint.tags.releaseVersion = this._releaseVersion;
+    this._testCafeTestPoint.tags.risk = this._risk;
+    this._testCafeTestPoint.tags.testType = this._testType;
   }
 
   get application(): string {
@@ -80,14 +91,35 @@ export class TestDataProcessor {
 
   set fixtureName(fixtureName: string) {
     this._testCafeTestPoint.fields.fixtureName = fixtureName;
+    this._fixtureName = fixtureName;
   }
 
   /**
    * Set the metadata value for keys 'feature' and 'risk' you add to your TestCafe test
    * TODO: this is an example, make this applicable for your project, check out the readme for an example
-   * @param metadata on fixture or test level
+   * @param metadata on fixture level
    */
-  set metaData(metadata: TestMetadata) {
+  set fixtureMetaData(metadata: TestMetadata) {
+    if (metadata.risk) {
+      this._testCafeTestPoint.tags.risk = metadata.risk;
+      this._risk = metadata.risk;
+    } else if (!metadata.risk) {
+      this._risk = UNKNOWN;
+    }
+    if (metadata.feature) {
+      this._testCafeTestPoint.tags.feature = metadata.feature;
+      this._feature = metadata.feature;
+    } else if (!metadata.feature) {
+      this._feature = UNKNOWN;
+    }
+  }
+
+  /**
+   * Set the metadata value for keys 'feature' and 'risk' you add to your TestCafe test
+   * TODO: this is an example, make this applicable for your project, check out the readme for an example
+   * @param metadata on test level
+   */
+  set testMetaData(metadata: TestMetadata) {
     if (metadata.risk) this._testCafeTestPoint.tags.risk = metadata.risk;
 
     if (metadata.feature) this._testCafeTestPoint.tags.feature = metadata.feature;
@@ -96,6 +128,7 @@ export class TestDataProcessor {
   set releaseVersion(releaseVersion: string) {
     this._testCafeTestPoint.tags.releaseVersion = releaseVersion;
     this._testCafeRunPoint.tags.releaseVersion = releaseVersion;
+    this._releaseVersion = releaseVersion;
   }
 
   set startTimeTest(startTime: number) {
@@ -144,6 +177,7 @@ export class TestDataProcessor {
     else if (path.includes('integration')) testType = 'IT';
     else testType = 'UNKNOWN_TEST_TYPE';
 
+    this._testType = testType;
     this._testCafeTestPoint.tags.testType = testType;
   }
 

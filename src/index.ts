@@ -44,7 +44,7 @@ module.exports = function () {
         testDataProcessor.fixtureName = name;
         testDataProcessor.application = path;
         testDataProcessor.testType = path;
-        testDataProcessor.metaData = fixtureMeta;
+        testDataProcessor.fixtureMetaData = fixtureMeta;
       }
     },
 
@@ -70,7 +70,7 @@ module.exports = function () {
         const hasErrors = !!errors.length;
         const hasWarnings = !!warnings.length;
 
-        testDataProcessor.metaData = testMeta;
+        testDataProcessor.testMetaData = testMeta;
         testDataProcessor.testName = name;
         testDataProcessor.timeStampInNano = process.hrtime.bigint();
         testDataProcessor.durationTestMs = testRunInfo.durationMs;
