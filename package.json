@@ -2,26 +2,25 @@
   "name": "testcafe-reporter-influxdb",
   "version": "1.4.0",
   "description": "TestCafe reporter plugin for Influxdb",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/vanbadasselt/testcafe-reporter-influxdb.git"
-  },
-  "author": {
-    "name": "anaisvanasselt",
-    "email": "anais@detesters.nl",
-    "url": "https://linkedin.com/in/anais-van-asselt"
-  },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "bin": "lib/index.js",
   "files": [
-    "/lib"
+    "lib/**/*"
   ],
   "scripts": {
     "prebuild": "rimraf lib",
     "build": "tsc",
+    "test": "echo \"Warning: test not working yet\" && exit 1",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.js\"",
-    "test": "gulp test"
+    "lint": "eslint ./src/**/*.ts --fix",
+    "prepare": "npm run prebuild && npm run build",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vanbadasselt/testcafe-reporter-influxdb.git"
   },
   "keywords": [
     "testcafe",
@@ -29,7 +28,16 @@
     "influxdb",
     "plugin"
   ],
+  "author": {
+    "name": "anaisvanasselt",
+    "email": "anais@detesters.nl",
+    "url": "https://linkedin.com/in/anais-van-asselt"
+  },
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vanbadasselt/testcafe-reporter-influxdb/issues"
+  },
+  "homepage": "https://github.com/vanBadAsselt/testcafe-reporter-influxdb/blob/main/README.md",
   "devDependencies": {
     "@babel/core": "^7.3.4",
     "@babel/plugin-transform-runtime": "^7.3.4",

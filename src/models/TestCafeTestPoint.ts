@@ -5,10 +5,10 @@ import { tableNameTest } from '../influx-db-sender';
 export class TestCafeTestPoint implements IPoint {
   measurement: string;
   timestamp: number;
-  fields?: {
+  fields: {
     [name: string]: any;
   };
-  tags?: {
+  tags: {
     [name: string]: string;
   };
 
