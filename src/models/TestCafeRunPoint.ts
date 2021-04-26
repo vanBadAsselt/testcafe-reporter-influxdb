@@ -4,10 +4,10 @@ import { tableNameRun } from '../influx-db-sender';
 
 export class TestCafeRunPoint implements IPoint {
   measurement: string;
-  tags?: {
+  tags: {
     [name: string]: string;
   };
-  fields?: {
+  fields: {
     [name: string]: any;
   };
 
