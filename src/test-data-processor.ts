@@ -141,8 +141,12 @@ export class TestDataProcessor {
   }
 
   set startTimeTestRun(startTime: number) {
-    this._startTimeTestRun = startTime;
-    this._startTimeTestRunDate = Date.now();
+      if (startTime) {
+          this._startTimeTestRun = startTime;
+      } else {
+          this._startTimeTestRun = Date.now().valueOf();
+      }
+      this._startTimeTestRunDate = Date.now();
   }
 
   set testCases(testCases: number) {
@@ -200,7 +204,11 @@ export class TestDataProcessor {
   }
 
   set unstable(unstable: boolean) {
-    this._testCafeTestPoint.tags.unstable = String(unstable);
+      if (unstable) {
+          this._testCafeTestPoint.tags.unstable = String(unstable);
+      } else {
+          this._testCafeTestPoint.tags.unstable = UNKNOWN;
+      }
   }
 
   set warningMessages(value: string[]) {

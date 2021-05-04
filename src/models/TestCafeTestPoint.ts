@@ -17,10 +17,10 @@ export class TestCafeTestPoint implements IPoint {
     this.timestamp = 0;
     this.fields = {
       durationMs: 0,
-      errorMessage: [],
+      errorMessage: UNKNOWN,
       fixtureName: UNKNOWN,
       testName: UNKNOWN,
-      warningMessage: [],
+      warningMessage: UNKNOWN,
     };
     this.tags = {
       application: UNKNOWN,
