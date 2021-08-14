@@ -1,8 +1,6 @@
 import * as dotenv from 'dotenv';
 
-const result = dotenv.config();
-
-if (result.error) throw result.error;
+dotenv.config();
 
 export const config = {
   ciProjectName: process.env.CI_PROJECT_NAME ?? 'UNK', // this is a gitlab predefined variable

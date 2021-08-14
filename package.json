@@ -51,7 +51,7 @@
     "gulp": "^4.0.0",
     "gulp-babel": "^8.0.0",
     "gulp-eslint": "^5.0.0",
-    "gulp-mocha": "^6.0.0",
+    "gulp-mocha": "^8.0.0",
     "normalize-newline": "^1.0.2",
     "prettier": "^2.2.1",
     "read-file-relative": "^1.2.0",

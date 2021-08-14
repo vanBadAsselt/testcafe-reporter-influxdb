@@ -1,8 +1,8 @@
 import { IPoint } from 'influx';
 import { UNKNOWN } from '../test-data-processor';
-import { tableNameRun } from '../influx-db-sender';
+import { tableNameRun } from '../influx-config/influx-db-sender';
 
-export class TestCafeRunPoint implements IPoint {
+export class TestRunResult implements IPoint {
   measurement: string;
   tags: {
     [name: string]: string;

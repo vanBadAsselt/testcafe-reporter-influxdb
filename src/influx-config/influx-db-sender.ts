@@ -1,8 +1,8 @@
 import { FieldType, InfluxDB, IPoint } from 'influx';
 import { config } from './config';
 
-export const tableNameTest = 'testcafeTest';
-export const tableNameRun = 'testcafeRun';
+export const tableNameTest = 'testResults';
+export const tableNameRun = 'testRunResults';
 export const influx = new InfluxDB({
   host: config.influxHost,
   port: config.influxPort,
@@ -13,23 +13,24 @@ export const influx = new InfluxDB({
     {
       measurement: tableNameTest,
       fields: {
-        testName: FieldType.STRING,
-        fixtureName: FieldType.STRING,
         durationMs: FieldType.INTEGER,
         errorMessage: FieldType.STRING,
+        featureName: FieldType.STRING,
+        skippedMessage: FieldType.STRING,
+        testName: FieldType.STRING,
         warningMessage: FieldType.STRING,
       },
-      tags: ['application', 'testType', 'feature', 'risk', 'releaseVersion', 'result', 'unstable'],
+      tags: ['application', 'applicationType', 'feature', 'releaseVersion', 'result', 'risk', 'run', 'testType'],
     },
     {
       measurement: tableNameRun,
       fields: {
-        duration: FieldType.STRING,
-        testCases: FieldType.INTEGER,
+        durationMs: FieldType.INTEGER,
+        testCasesTotal: FieldType.INTEGER,
         testCasesFailed: FieldType.INTEGER,
         testCasesSkipped: FieldType.INTEGER,
       },
-      tags: ['application', 'releaseVersion', 'result'],
+      tags: ['application', 'applicationType', 'releaseVersion', 'result', 'run', 'testType'],
     },
   ],
 });
@@ -42,6 +43,12 @@ export class InfluxDbSender {
   }
 
   public async sendPoints() {
+    await influx.createRetentionPolicy('defaultPolicy', {
+      database: config.influxDb,
+      duration: '30d',
+      isDefault: true,
+      replication: 1,
+    });
     await influx.writePoints(this._testPoints);
   }
 }

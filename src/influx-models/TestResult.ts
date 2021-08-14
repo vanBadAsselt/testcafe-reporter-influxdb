@@ -1,8 +1,8 @@
 import { IPoint } from 'influx';
-import { UNKNOWN } from '../test-data-processor';
-import { tableNameTest } from '../influx-db-sender';
+import { APPLICATION_TYPE_FRONTEND, UNKNOWN } from '../test-data-processor';
+import { tableNameTest } from '../influx-config/influx-db-sender';
 
-export class TestCafeTestPoint implements IPoint {
+export class TestResult implements IPoint {
   measurement: string;
   timestamp: number;
   fields: {
@@ -18,18 +18,20 @@ export class TestCafeTestPoint implements IPoint {
     this.fields = {
       durationMs: 0,
       errorMessage: UNKNOWN,
-      fixtureName: UNKNOWN,
+      featureName: UNKNOWN,
+      skippedMessage: UNKNOWN,
       testName: UNKNOWN,
       warningMessage: UNKNOWN,
     };
     this.tags = {
       application: UNKNOWN,
+      applicationType: APPLICATION_TYPE_FRONTEND,
       feature: UNKNOWN,
       releaseVersion: UNKNOWN,
       result: UNKNOWN,
       risk: UNKNOWN,
+      run: UNKNOWN,
       testType: UNKNOWN,
-      unstable: UNKNOWN,
     };
   }
 }

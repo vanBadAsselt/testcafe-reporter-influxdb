@@ -1,7 +1,7 @@
 import { EOL } from 'os';
-import { config } from './config';
-import { influx, InfluxDbSender } from './influx-db-sender';
-import { TestDataProcessor } from './test-data-processor';
+import { config } from './influx-config/config';
+import { influx, InfluxDbSender } from './influx-config/influx-db-sender';
+import { NOK, OK, SKIP, TestDataProcessor } from './test-data-processor';
 
 let testDataProcessor: TestDataProcessor;
 let influxDbSender: InfluxDbSender;
@@ -41,7 +41,7 @@ module.exports = function () {
      */
     async reportFixtureStart(name: string, path: string, fixtureMeta: any) {
       if (config.testResultsEnabled) {
-        testDataProcessor.fixtureName = name;
+        testDataProcessor.featureName = name;
         testDataProcessor.application = path;
         testDataProcessor.testType = path;
         testDataProcessor.fixtureMetaData = fixtureMeta;
@@ -54,7 +54,9 @@ module.exports = function () {
      * @param {Object} testMeta - The test metadata.
      */
     async reportTestStart(/* name, testMeta */) {
-      testDataProcessor.startTimeTest = Date.now();
+      if (config.testResultsEnabled) {
+        testDataProcessor.startTimeTest = Date.now();
+      }
     },
 
     /**
@@ -74,8 +76,7 @@ module.exports = function () {
         testDataProcessor.testName = name;
         testDataProcessor.timeStampInNano = process.hrtime.bigint();
         testDataProcessor.durationTestMs = testRunInfo.durationMs;
-        testDataProcessor.testResult = testRunInfo.skipped ? 'SKIPPED' : 'SUCCESSFUL';
-        testDataProcessor.unstable = testRunInfo.unstable;
+        testDataProcessor.result = testRunInfo.skipped ? SKIP : OK;
 
         if (hasErrors) {
           const errorMessages: string[] = [];
@@ -84,7 +85,7 @@ module.exports = function () {
           });
 
           testDataProcessor.errorMessages = errorMessages;
-          testDataProcessor.testResult = 'FAIL';
+          testDataProcessor.result = NOK;
         }
 
         if (hasWarnings) {
@@ -95,8 +96,8 @@ module.exports = function () {
           testDataProcessor.warningMessages = warningMessages;
         }
 
-        influxDbSender.savePoint(testDataProcessor.testCafeTestPoint);
-        testDataProcessor.resetTestCafeTestPoint();
+        influxDbSender.savePoint(testDataProcessor.testResult);
+        testDataProcessor.resetTestResult();
       }
     },
 
@@ -110,15 +111,11 @@ module.exports = function () {
     async reportTaskDone(endTime: number, passed: number, warnings: number, testRunResult: any) {
       if (config.testResultsEnabled) {
         testDataProcessor.durationTestRunMs = endTime;
-        testDataProcessor.durationTestRunStr = this.moment
-          .duration(testDataProcessor.durationTestRunMs)
-          .format('h[h] mm[m] ss[s]');
-
-        testDataProcessor.testRunResult = testRunResult;
+        testDataProcessor.runResult = testRunResult;
         testDataProcessor.testCasesFailed = testRunResult.failedCount;
         testDataProcessor.testCasesSkipped = testRunResult.skippedCount;
 
-        influxDbSender.savePoint(testDataProcessor.testCafeRunPoint);
+        influxDbSender.savePoint(testDataProcessor.testRunResult);
 
         influx.ping(5000).then(hosts => {
           hosts.forEach(host => {

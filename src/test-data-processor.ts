@@ -1,48 +1,55 @@
 import { TestMetadata } from './test-metadata';
-import { TestCafeTestPoint } from './models/TestCafeTestPoint';
-import { TestCafeRunPoint } from './models/TestCafeRunPoint';
-import { config } from './config';
+import { TestResult } from './influx-models/TestResult';
+import { TestRunResult } from './influx-models/TestRunResult';
+import { config } from './influx-config/config';
 
+export const APPLICATION_TYPE_FRONTEND = 'FE';
+export const OK = 'SUCCESSFUL';
+export const NOK = 'FAILED';
+export const SKIP = 'SKIPPED';
+export const TYPE_COMPONENT = 'CT';
+export const TYPE_INTEGRATION = 'IT';
 export const UNKNOWN = 'UNK';
 
 export class TestDataProcessor {
   private _application: string = UNKNOWN;
   private _durationTestRunMs: number = 0;
   private _feature: string = UNKNOWN;
-  private _fixtureName: string = UNKNOWN;
+  private _featureName: string = UNKNOWN;
   private _releaseVersion: string = UNKNOWN;
   private _risk: string = UNKNOWN;
+  private _run: string = UNKNOWN;
   private _startTimeTest: number = 0;
   private _startHrTimeTest: bigint = BigInt(0);
   private _startTimeTestRun: number = 0;
   private _startTimeTestRunDate: number = Date.now();
-  private _testRunResult: string = UNKNOWN;
   private _testType: string = UNKNOWN;
 
-  private _testCafeTestPoint: TestCafeTestPoint;
-  private readonly _testCafeRunPoint: TestCafeRunPoint;
+  private _testResult: TestResult;
+  private readonly _testRunResult: TestRunResult;
 
   constructor() {
-    this._testCafeTestPoint = new TestCafeTestPoint();
-    this._testCafeRunPoint = new TestCafeRunPoint();
+    this._testResult = new TestResult();
+    this._testRunResult = new TestRunResult();
   }
 
-  get testCafeTestPoint(): TestCafeTestPoint {
-    return this._testCafeTestPoint;
+  get testResult(): TestResult {
+    return this._testResult;
   }
 
-  get testCafeRunPoint(): TestCafeRunPoint {
-    return this._testCafeRunPoint;
+  get testRunResult(): TestRunResult {
+    return this._testRunResult;
   }
 
-  resetTestCafeTestPoint() {
-    this._testCafeTestPoint = new TestCafeTestPoint();
-    this._testCafeTestPoint.fields.fixtureName = this._fixtureName;
-    this._testCafeTestPoint.tags.application = this._application;
-    this._testCafeTestPoint.tags.feature = this._feature;
-    this._testCafeTestPoint.tags.releaseVersion = this._releaseVersion;
-    this._testCafeTestPoint.tags.risk = this._risk;
-    this._testCafeTestPoint.tags.testType = this._testType;
+  resetTestResult() {
+    this._testResult = new TestResult();
+    this._testResult.fields.featureName = this._featureName;
+    this._testResult.tags.application = this._application;
+    this._testResult.tags.feature = this._feature;
+    this._testResult.tags.releaseVersion = this._releaseVersion;
+    this._testResult.tags.risk = this._risk;
+    this._testResult.tags.run = this._run;
+    this._testResult.tags.testType = this._testType;
   }
 
   get application(): string {
@@ -65,33 +72,25 @@ export class TestDataProcessor {
     else applicationProcessed = 'UNKNOWN_APPLICATION';
 
     this._application = applicationProcessed;
-    this._testCafeRunPoint.tags.application = this._application;
-    this._testCafeTestPoint.tags.application = this._application;
+    this._testRunResult.tags.application = this._application;
+    this._testResult.tags.application = this._application;
   }
 
   set durationTestMs(durationMs: number) {
-    this._testCafeTestPoint.fields.durationMs = durationMs;
-  }
-
-  get durationTestRunMs(): number {
-    return this._durationTestRunMs;
+    this._testResult.fields.durationMs = durationMs;
   }
 
   set durationTestRunMs(endTime: number) {
     this._durationTestRunMs = endTime - this.startTimeTestRun;
   }
 
-  set durationTestRunStr(durationStr: string) {
-    this._testCafeRunPoint.fields.duration = durationStr;
-  }
-
   set errorMessages(errorMessages: string[]) {
-    this._testCafeTestPoint.fields.errorMessage = errorMessages;
+    this._testResult.fields.errorMessage = errorMessages;
   }
 
-  set fixtureName(fixtureName: string) {
-    this._testCafeTestPoint.fields.fixtureName = fixtureName;
-    this._fixtureName = fixtureName;
+  set featureName(featureName: string) {
+    this._testResult.fields.featureName = featureName;
+    this._featureName = featureName;
   }
 
   /**
@@ -101,13 +100,13 @@ export class TestDataProcessor {
    */
   set fixtureMetaData(metadata: TestMetadata) {
     if (metadata.risk) {
-      this._testCafeTestPoint.tags.risk = metadata.risk;
+      this._testResult.tags.risk = metadata.risk;
       this._risk = metadata.risk;
     } else if (!metadata.risk) {
       this._risk = UNKNOWN;
     }
     if (metadata.feature) {
-      this._testCafeTestPoint.tags.feature = metadata.feature;
+      this._testResult.tags.feature = metadata.feature;
       this._feature = metadata.feature;
     } else if (!metadata.feature) {
       this._feature = UNKNOWN;
@@ -120,14 +119,14 @@ export class TestDataProcessor {
    * @param metadata on test level
    */
   set testMetaData(metadata: TestMetadata) {
-    if (metadata.risk) this._testCafeTestPoint.tags.risk = metadata.risk;
+    if (metadata.risk) this._testResult.tags.risk = metadata.risk;
 
-    if (metadata.feature) this._testCafeTestPoint.tags.feature = metadata.feature;
+    if (metadata.feature) this._testResult.tags.feature = metadata.feature;
   }
 
   set releaseVersion(releaseVersion: string) {
-    this._testCafeTestPoint.tags.releaseVersion = releaseVersion;
-    this._testCafeRunPoint.tags.releaseVersion = releaseVersion;
+    this._testResult.tags.releaseVersion = releaseVersion;
+    this._testRunResult.tags.releaseVersion = releaseVersion;
     this._releaseVersion = releaseVersion;
   }
 
@@ -141,24 +140,34 @@ export class TestDataProcessor {
   }
 
   set startTimeTestRun(startTime: number) {
-      if (startTime) {
-          this._startTimeTestRun = startTime;
-      } else {
-          this._startTimeTestRun = Date.now().valueOf();
-      }
-      this._startTimeTestRunDate = Date.now();
+    const date = Date.now();
+
+    if (startTime) {
+      this._startTimeTestRun = startTime;
+    } else {
+      this._startTimeTestRun = date.valueOf();
+    }
+    this._startTimeTestRunDate = date;
+
+    let d = new Date(date);
+    const dateString =
+      ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '/' + d.getFullYear();
+    const timeString = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    this._run = dateString + ', ' + timeString;
+    this._testResult.tags.run = this._run;
+    this._testRunResult.tags.run = this._run;
   }
 
   set testCases(testCases: number) {
-    this._testCafeRunPoint.fields.testCases = testCases;
+    this._testRunResult.fields.testCases = testCases;
   }
 
   set testCasesFailed(testCases: number) {
-    this._testCafeRunPoint.fields.testCasesFailed = testCases;
+    this._testRunResult.fields.testCasesFailed = testCases;
   }
 
   set testCasesSkipped(testCases: number) {
-    this._testCafeRunPoint.fields.testCasesSkipped = testCases;
+    this._testRunResult.fields.testCasesSkipped = testCases;
   }
 
   /**
@@ -166,7 +175,7 @@ export class TestDataProcessor {
    * @param path of the project
    */
   set testName(testName: string) {
-    this._testCafeTestPoint.fields.testName = testName;
+    this._testResult.fields.testName = testName;
   }
 
   /**
@@ -177,41 +186,28 @@ export class TestDataProcessor {
   set testType(path: string) {
     let testType: string;
 
-    if (path.includes('component')) testType = 'CT';
-    else if (path.includes('integration')) testType = 'IT';
+    if (path.includes('component')) testType = TYPE_COMPONENT;
+    else if (path.includes('integration')) testType = TYPE_INTEGRATION;
     else testType = 'UNKNOWN_TEST_TYPE';
 
     this._testType = testType;
-    this._testCafeTestPoint.tags.testType = testType;
+    this._testResult.tags.testType = testType;
   }
 
-  set testResult(result: string) {
-    this._testCafeTestPoint.tags.result = result;
+  set result(result: string) {
+    this._testResult.tags.result = result;
   }
 
-  get testRunResult(): any {
-    return this._testRunResult;
-  }
-
-  set testRunResult(testRunResult: any) {
-    this._testCafeRunPoint.tags.result =
-      testRunResult.failedCount > 0 || this._durationTestRunMs === 0 ? 'FAIL' : 'SUCCESSFUL';
+  set runResult(testRunResult: any) {
+    this._testRunResult.tags.result = testRunResult.failedCount > 0 || this._durationTestRunMs === 0 ? NOK : OK;
   }
 
   set timeStampInNano(endHrTime: bigint) {
     const timeDiffMs = Number(endHrTime - this._startHrTimeTest) / 1e6;
-    this._testCafeTestPoint.timestamp = (this._startTimeTestRunDate + timeDiffMs) * 1e6;
+    this._testResult.timestamp = (this._startTimeTestRunDate + timeDiffMs) * 1e6;
   }
 
-  set unstable(unstable: boolean) {
-      if (unstable) {
-          this._testCafeTestPoint.tags.unstable = String(unstable);
-      } else {
-          this._testCafeTestPoint.tags.unstable = UNKNOWN;
-      }
-  }
-
-  set warningMessages(value: string[]) {
-    this._testCafeTestPoint.fields.warningMessage = value;
+  set warningMessages(warningMessages: string[]) {
+    this._testResult.fields.warningMessage = warningMessages[0];
   }
 }
