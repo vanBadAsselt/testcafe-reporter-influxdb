@@ -158,8 +158,8 @@ export class TestDataProcessor {
     this._testRunResult.tags.run = this._run;
   }
 
-  set testCases(testCases: number) {
-    this._testRunResult.fields.testCases = testCases;
+  set testCasesTotal(testCases: number) {
+    this._testRunResult.fields.testCasesTotal = testCases;
   }
 
   set testCasesFailed(testCases: number) {

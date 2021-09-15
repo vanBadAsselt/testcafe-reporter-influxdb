@@ -16,7 +16,7 @@ module.exports = function () {
      * @param {Array of strings} userAgents - The list of browsers used for testing. Contains the formatted names and versions of the browsers and operating systems.
      * @param {Number} testCount - The total number of tests to run.
      */
-    async reportTaskStart(startTime: number, userAgents: string[], testCount: number) {
+    async reportTaskStart(startTime: Date, userAgents: string[], testCount: number) {
       if (!config.testResultsEnabled) {
         this.write(`Uploading test results to Influx DB is disabled. ${EOL}`);
         return;
@@ -25,8 +25,8 @@ module.exports = function () {
       influxDbSender = new InfluxDbSender();
       testDataProcessor = new TestDataProcessor();
       testDataProcessor.releaseVersion = config.ciReleaseVersion;
-      testDataProcessor.startTimeTestRun = startTime;
-      testDataProcessor.testCases = testCount;
+      testDataProcessor.startTimeTestRun = startTime.getTime();
+      testDataProcessor.testCasesTotal = testCount;
 
       this.write(`Testcafe reporter started! Running tests in: ${userAgents} for ${config.ciReleaseVersion}`)
         .newline()
@@ -108,9 +108,9 @@ module.exports = function () {
      * @param {Array of Strings} warnings - An array of warnings that occurred during a task run.
      * @param {Object} testRunResult - Contains information about the task results. Check out typedefs.js
      */
-    async reportTaskDone(endTime: number, passed: number, warnings: number, testRunResult: any) {
+    async reportTaskDone(endTime: Date, passed: number, warnings: number, testRunResult: any) {
       if (config.testResultsEnabled) {
-        testDataProcessor.durationTestRunMs = endTime;
+        testDataProcessor.durationTestRunMs = endTime.getTime();
         testDataProcessor.runResult = testRunResult;
         testDataProcessor.testCasesFailed = testRunResult.failedCount;
         testDataProcessor.testCasesSkipped = testRunResult.skippedCount;
