@@ -2,12 +2,16 @@ import { IPoint } from 'influx';
 import { APPLICATION_TYPE_FRONTEND, UNKNOWN } from '../test-data-processor';
 import { tableNameTest } from '../influx-config/influx-db-sender';
 
+/* eslint-disable @typescript-eslint/no-explicit-any*/
 export class TestResult implements IPoint {
   measurement: string;
+
   timestamp: number;
+
   fields: {
     [name: string]: any;
   };
+
   tags: {
     [name: string]: string;
   };

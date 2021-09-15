@@ -13,19 +13,31 @@ export const UNKNOWN = 'UNK';
 
 export class TestDataProcessor {
   private _application: string = UNKNOWN;
-  private _durationTestRunMs: number = 0;
+
+  private _durationTestRunMs = 0;
+
   private _feature: string = UNKNOWN;
+
   private _featureName: string = UNKNOWN;
+
   private _releaseVersion: string = UNKNOWN;
+
   private _risk: string = UNKNOWN;
+
   private _run: string = UNKNOWN;
-  private _startTimeTest: number = 0;
-  private _startHrTimeTest: bigint = BigInt(0);
-  private _startTimeTestRun: number = 0;
+
+  private _startTimeTest = 0;
+
+  private _startHrTimeTest = BigInt(0);
+
+  private _startTimeTestRun = 0;
+
   private _startTimeTestRunDate: number = Date.now();
+
   private _testType: string = UNKNOWN;
 
   private _testResult: TestResult;
+
   private readonly _testRunResult: TestRunResult;
 
   constructor() {
@@ -149,11 +161,10 @@ export class TestDataProcessor {
     }
     this._startTimeTestRunDate = date;
 
-    let d = new Date(date);
-    const dateString =
-      ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + '/' + d.getFullYear();
-    const timeString = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
-    this._run = dateString + ', ' + timeString;
+    const d = new Date(date);
+    const dateString = `${`0${d.getDate()}`.slice(-2)}/${`0${d.getMonth() + 1}`.slice(-2)}/${d.getFullYear()}`;
+    const timeString = `${`0${d.getHours()}`.slice(-2)}:${`0${d.getMinutes()}`.slice(-2)}`;
+    this._run = `${dateString}, ${timeString}`;
     this._testResult.tags.run = this._run;
     this._testRunResult.tags.run = this._run;
   }

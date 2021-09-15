@@ -3,6 +3,8 @@ import { config } from './config';
 
 export const tableNameTest = 'testResults';
 export const tableNameRun = 'testRunResults';
+
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types*/
 export const influx = new InfluxDB({
   host: config.influxHost,
   port: config.influxPort,

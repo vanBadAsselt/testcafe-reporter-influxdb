@@ -68,7 +68,7 @@ module.exports = function () {
     async reportTestDone(name: string, testRunInfo: any, testMeta: any) {
       if (config.testResultsEnabled) {
         const errors = testRunInfo.errs;
-        const warnings = testRunInfo.warnings;
+        const { warnings } = testRunInfo;
         const hasErrors = !!errors.length;
         const hasWarnings = !!warnings.length;
 
@@ -122,7 +122,6 @@ module.exports = function () {
             if (host.online) this.write(`${host.url.host} responded in ${host.rtt} ms running ${host.version}.${EOL}`);
             else {
               this.write(`${host.url.host} is offline :( test results won't be stored. ${EOL}`);
-              return;
             }
           });
         });
