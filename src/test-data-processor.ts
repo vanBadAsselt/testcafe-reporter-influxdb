@@ -64,7 +64,7 @@ export class TestDataProcessor {
   set application(path: string) {
     let applicationProcessed;
 
-    if (!config.ciProjectName.includes('UNK')) {
+    if (!config.ciProjectName.includes(UNKNOWN)) {
       applicationProcessed = config.ciProjectName;
     }
 
